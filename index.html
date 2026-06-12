@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>testis_ver1.3</title>
+    <title>tetris_ver1.4</title>
     <style>
         body { background: #202028; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; }
         .game-container { display: flex; gap: 20px; align-items: flex-start; }
-        canvas { border: solid .2em #fff; background-color: #000; }
-        #tetris { width: 240px; height: 400px; }
-        #nextPiece { width: 80px; height: 80px; }
+        /* 캔버스 크기를 CSS로 고정 */
+        #tetris { border: solid .2em #fff; background-color: #000; width: 240px; height: 400px; }
+        #nextPiece { border: solid .2em #fff; background-color: #000; width: 80px; height: 80px; }
     </style>
 </head>
 <body>
@@ -25,6 +25,7 @@
         const nextCanvas = document.getElementById('nextPiece');
         const nextContext = nextCanvas.getContext('2d');
         
+        // 캔버스 스케일링
         context.scale(20, 20);
         nextContext.scale(20, 20);
 
@@ -52,7 +53,7 @@
 
         function drawNext() {
             nextContext.fillStyle = '#000';
-            nextContext.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+            nextContext.fillRect(0, 0, 4, 4); // 캔버스 좌표계 기준
             nextMatrix.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value !== 0) {
@@ -66,11 +67,7 @@
         function draw() {
             context.fillStyle = '#000';
             context.fillRect(0, 0, canvas.width, canvas.height);
-            context.strokeStyle = '#222';
-            context.lineWidth = 0.05;
-            for(let i=0; i<=12; i++) { context.beginPath(); context.moveTo(i, 0); context.lineTo(i, 20); context.stroke(); }
-            for(let i=0; i<=20; i++) { context.beginPath(); context.moveTo(0, i); context.lineTo(12, i); context.stroke(); }
-
+            
             drawMatrix(arena, {x: 0, y: 0}, context);
             drawMatrix(player.matrix, player.pos, context);
         }
@@ -87,6 +84,7 @@
         }
 
         function merge(a, p) { p.matrix.forEach((r, y) => r.forEach((v, x) => { if(v) a[y+p.pos.y][x+p.pos.x] = v; })); }
+        
         function arenaSweep() {
             outer: for (let y = arena.length - 1; y > 0; --y) {
                 for (let x = 0; x < arena[y].length; ++x) if (arena[y][x] === 0) continue outer;
@@ -95,6 +93,7 @@
                 ++y;
             }
         }
+
         function collide(a, p) {
             for(let y=0; y<p.matrix.length; y++) {
                 for(let x=0; x<p.matrix[y].length; x++) {
@@ -103,6 +102,7 @@
             }
             return false;
         }
+
         function rotate(m, d) { 
             for(let y=0; y<m.length; y++) for(let x=0; x<y; x++) [m[x][y], m[y][x]] = [m[y][x], m[x][y]]; 
             if(d>0) m.forEach(r => r.reverse()); else m.reverse(); 
