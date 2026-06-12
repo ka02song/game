@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tetris</title>
+    <title>testis_ver1.3</title>
     <style>
         body { background: #202028; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; }
         .game-container { display: flex; gap: 20px; align-items: flex-start; }
@@ -66,7 +66,6 @@
         function draw() {
             context.fillStyle = '#000';
             context.fillRect(0, 0, canvas.width, canvas.height);
-            // 격자선
             context.strokeStyle = '#222';
             context.lineWidth = 0.05;
             for(let i=0; i<=12; i++) { context.beginPath(); context.moveTo(i, 0); context.lineTo(i, 20); context.stroke(); }
