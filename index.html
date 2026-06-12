@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tetris Game</title>
+    <title>Tetris</title>
     <style>
         body { background: #202028; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: sans-serif; }
         .game-container { display: flex; gap: 20px; align-items: flex-start; }
@@ -30,19 +30,20 @@
 
         const colors = [null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'];
 
+        const PIECES = {
+            'I': [[0, 5, 0, 0], [0, 5, 0, 0], [0, 5, 0, 0], [0, 5, 0, 0]],
+            'L': [[0, 3, 0], [0, 3, 0], [0, 3, 3]],
+            'J': [[0, 4, 0], [0, 4, 0], [4, 4, 0]],
+            'O': [[2, 2], [2, 2]],
+            'T': [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
+            'S': [[0, 6, 6], [6, 6, 0], [0, 0, 0]],
+            'Z': [[7, 7, 0], [0, 7, 7], [0, 0, 0]],
+        };
+
         function createPiece(type) {
-            const pieces = 'ILJOTSZ';
-            const t = type || pieces[Math.floor(Math.random() * pieces.length)];
-            const m = {
-                'I': [[0, 5, 0, 0], [0, 5, 0, 0], [0, 5, 0, 0], [0, 5, 0, 0]],
-                'L': [[0, 3, 0], [0, 3, 0], [0, 3, 3]],
-                'J': [[0, 4, 0], [0, 4, 0], [4, 4, 0]],
-                'O': [[2, 2], [2, 2]],
-                'T': [[0, 1, 0], [1, 1, 1], [0, 0, 0]],
-                'S': [[0, 6, 6], [6, 6, 0], [0, 0, 0]],
-                'Z': [[7, 7, 0], [0, 7, 7], [0, 0, 0]],
-            };
-            return m[t];
+            const keys = Object.keys(PIECES);
+            const t = type || keys[Math.floor(Math.random() * keys.length)];
+            return PIECES[t];
         }
 
         const arena = Array.from({length: 20}, () => new Array(12).fill(0));
@@ -65,7 +66,6 @@
         function draw() {
             context.fillStyle = '#000';
             context.fillRect(0, 0, canvas.width, canvas.height);
-            
             // 격자선
             context.strokeStyle = '#222';
             context.lineWidth = 0.05;
@@ -124,6 +124,7 @@
             dropCounter = 0;
         }
 
+        let dropCounter = 0, lastTime = 0;
         function update(time = 0) {
             dropCounter += time - lastTime;
             lastTime = time;
@@ -132,7 +133,6 @@
             requestAnimationFrame(update);
         }
 
-        let dropCounter = 0, lastTime = 0;
         document.addEventListener('keydown', e => {
             if (e.keyCode === 37) { if(player.pos.x > 0) player.pos.x--; }
             else if (e.keyCode === 39) { if(player.pos.x < 12 - player.matrix[0].length) player.pos.x++; }
@@ -141,8 +141,10 @@
             else if (e.keyCode === 32) { while(!collide(arena, player)) player.pos.y++; playerDrop(); }
         });
 
-        drawNext();
-        update();
+        window.onload = () => {
+            drawNext();
+            update();
+        };
     </script>
 </body>
 </html>
