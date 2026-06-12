@@ -1,18 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tetris</title>
+    <title>Tetris_Score_Ver</title>
     <style>
-        body { background: #202028; color: #fff; text-align: center; }
+        body { background: #202028; color: #fff; text-align: center; font-family: sans-serif; }
+        #game-wrapper { display: inline-block; position: relative; margin-top: 20px; }
         canvas { border: solid .2em #fff; background-color: #000; }
+        #score { font-size: 24px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
-    <canvas id="tetris" width="240" height="400"></canvas>
+    <div id="score">Score: 0</div>
+    <div id="game-wrapper">
+        <canvas id="tetris" width="240" height="400"></canvas>
+    </div>
+
     <script>
         const canvas = document.getElementById('tetris');
         const context = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
         context.scale(20, 20);
+
+        let score = 0;
+        let confetti = [];
 
         const colors = [null, '#FF0D72', '#0DC2FF', '#0DFF72', '#F538FF', '#FF8E0D', '#FFE138', '#3877FF'];
 
@@ -39,20 +49,8 @@
         function drawGrid() {
             context.strokeStyle = '#222';
             context.lineWidth = 0.05;
-            for (let x = 0; x < 12; x++) {
-                context.beginPath(); context.moveTo(x, 0); context.lineTo(x, 20); context.stroke();
-            }
-            for (let y = 0; y < 20; y++) {
-                context.beginPath(); context.moveTo(0, y); context.lineTo(12, y); context.stroke();
-            }
-        }
-
-        function draw() {
-            context.fillStyle = '#000';
-            context.fillRect(0, 0, canvas.width, canvas.height);
-            drawGrid();
-            drawMatrix(arena, {x: 0, y: 0});
-            drawMatrix(player.matrix, player.pos);
+            for (let x = 0; x < 12; x++) { context.beginPath(); context.moveTo(x, 0); context.lineTo(x, 20); context.stroke(); }
+            for (let y = 0; y < 20; y++) { context.beginPath(); context.moveTo(0, y); context.lineTo(12, y); context.stroke(); }
         }
 
         function drawMatrix(matrix, offset) {
@@ -66,6 +64,15 @@
             });
         }
 
+        function draw() {
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawMatrix(arena, {x: 0, y: 0});
+            drawMatrix(player.matrix, player.pos);
+            drawConfetti();
+        }
+
         function merge(arena, player) {
             player.matrix.forEach((row, y) => {
                 row.forEach((value, x) => {
@@ -75,14 +82,40 @@
         }
 
         function arenaSweep() {
+            let rowCount = 0;
             outer: for (let y = arena.length - 1; y > 0; --y) {
-                for (let x = 0; x < arena[y].length; ++x) {
-                    if (arena[y][x] === 0) continue outer;
-                }
+                for (let x = 0; x < arena[y].length; ++x) if (arena[y][x] === 0) continue outer;
                 const row = arena.splice(y, 1)[0].fill(0);
                 arena.unshift(row);
                 ++y;
+                rowCount++;
             }
+            if (rowCount > 0) {
+                score += rowCount * 10;
+                scoreElement.innerText = "Score: " + score;
+                if (score >= 50 && score < 60) triggerConfetti();
+            }
+        }
+
+        function triggerConfetti() {
+            for (let i = 0; i < 60; i++) {
+                confetti.push({
+                    x: 6, y: 10,
+                    vx: (Math.random() - 0.5) * 0.8,
+                    vy: (Math.random() - 0.5) * 0.8,
+                    life: 100
+                });
+            }
+        }
+
+        function drawConfetti() {
+            confetti.forEach((c, index) => {
+                context.fillStyle = 'yellow';
+                context.fillRect(c.x, c.y, 0.2, 0.2);
+                c.x += c.vx; c.y += c.vy;
+                c.life--;
+                if (c.life <= 0) confetti.splice(index, 1);
+            });
         }
 
         function collide(arena, player) {
@@ -97,9 +130,7 @@
 
         function rotate(matrix, dir) {
             for (let y = 0; y < matrix.length; ++y) {
-                for (let x = 0; x < y; ++x) {
-                    [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
-                }
+                for (let x = 0; x < y; ++x) [matrix[x][y], matrix[y][x]] = [matrix[y][x], matrix[x][y]];
             }
             if (dir > 0) matrix.forEach(row => row.reverse());
             else matrix.reverse();
@@ -111,6 +142,8 @@
             player.pos.x = 5;
             if (collide(arena, player)) {
                 arena.forEach(row => row.fill(0));
+                score = 0;
+                scoreElement.innerText = "Score: 0";
             }
         }
 
@@ -147,7 +180,6 @@
 
         const arena = createMatrix(12, 20);
         const player = { pos: {x: 5, y: 0}, matrix: createPiece() };
-
         let dropCounter = 0;
         let lastTime = 0;
 
